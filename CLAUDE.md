@@ -6,112 +6,74 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Quick Links
 
-- **[Runtime Folder Structure & Component Reference](.claude/docs/runtime-structure.md)** - Complete inventory of all scripts
-- **[Custom Editor Scripts Guide](.claude/docs/custom-editors.md)** - Critical info for modifying Inspector UI
-- **[Development Patterns & Best Practices](.claude/docs/development-patterns.md)** - Physics patterns, system integration, Unity conventions
-- **[Documentation Generator Guide](.claude/docs/documentation-generator.md)** - XML documentation requirements
-- **[Changelog](.claude/docs/changelog.md)** - Recent updates and refactorings
-
-## Multi-Scene Support (Now in Main)
-
-Multi-scene architecture has been ported to main from `feature/multi-scene-support`. The following components are now available:
-
-- **GameData** ScriptableObject singleton for invisible cross-scene data persistence
-- **SpawnPoint** component for marking player spawn locations
-- **GameSceneManager** for scene loading with transitions
-- Updated **GameHealthManager** and **GameCollectionManager** with optional SO variable support
-- Updated **CharacterControllerCC** with spawn point priority logic
-
-See [Multi-Scene Architecture](#multi-scene-architecture) section below for details.
+- **[Program Flow Diagram](Assets/DressToImpress/Documentation/ProgramFlow.md)** - Mermaid flowchart of all class interactions
+- **[Component Reference](Assets/DressToImpress/Documentation/ComponentReference.md)** - DressToImpress component guide
+- **[Quick Start](Assets/DressToImpress/Documentation/QuickStart.md)** - Setup and usage guide
 
 ## Project Overview
 
-**Educational Unity Toolkit for "Animation and Interactivity" Class**
+**egtk_DressTemplate — Dress-To-Impress Game Template**
 
-This project provides a modular, no-code toolkit for students to create interactive Unity experiences using UnityEvents. The design philosophy centers on visual, Inspector-based connections between components - no programming required.
+This is a standalone Unity project and single git repository that implements a dress-up game template built on top of the eventGameToolKit (egtk) framework. It is a **template** — intended as a starting point for dress-up style games.
 
+- **Git Repo**: `https://github.com/caseyfarina/egtk_DressTemplate` (single repo, branch: `main`)
 - **Unity Version**: Unity 6 (6000.0.x or later)
 - **Render Pipeline**: Universal Render Pipeline (URP)
-- **Animation Engine**: DOTween FREE (open-source, no Pro license required)
+- **Animation Engine**: DOTween FREE
 
-## Critical Two-Repository Structure
+### Two-Scene Flow
 
-**⚠️ IMPORTANT: This project has TWO git repositories that must stay synchronized!**
+| Scene | Purpose |
+|---|---|
+| **Character Creation** | Player customizes body type, hair, and facial features |
+| **Styling Room** | Player selects clothing to match judge themes and earns a score |
 
-### Machines
-- **Laptop** (hostname: `electricEye`): `C:\Users\casey\Documents\unityProjects\egtkWorkingProject\`
-- **Desktop** (hostname: `BLD`): `F:\Unity Projects 2025\gameToolKitFarina\`
+### Core Scripts (`Assets/DressToImpress/Scripts/`)
 
-Run `hostname` to determine the current machine, then use the matching paths and sync command below.
+| Folder | Scripts | Responsibility |
+|---|---|---|
+| `Data/` | `ClothingCategory`, `ClothingItemData`, `JudgeData`, `CharacterProfile` | ScriptableObjects and shared enums |
+| `Game/` | `CharacterDisplay`, `CharacterCreator`, `StylingRoomManager`, `OutfitScorer`, `JudgeManager`, `DressUpThemeManager`, `DressUpSlot`, `ClothingItem` | Core game logic |
+| `Input/` | `InputSpriteClick`, `InputSpriteDrag` | 2D sprite interaction |
+| `UI/` | `ClothingPanelManager` | Category tabs + item grid UI |
+| `Editor/` | `ClothingImporter`, `SceneSetup_CharacterCreation`, `SceneSetup_StylingRoom` | Editor tools |
 
-### 1. Development/Testing Environment (This Repository)
-- **Purpose**: Main Unity project where all development and testing happens
-- **Contains**: Full Unity project with scenes, testing assets, and eventGameToolKit package at `Assets/eventGameToolKit/`
-- **Laptop path**: `C:\Users\casey\Documents\unityProjects\egtkWorkingProject\gameToolKit\`
-- **Desktop path**: `F:\Unity Projects 2025\gameToolKitFarina\gameToolKit\`
+### Key Design Notes
 
-### 2. Unity Package Repository (Separate Git Repo)
-- **Purpose**: Standalone Unity package with its own git repository
-- **Contains**: Only package contents (no test scenes or development assets)
-- **Used By**: Students via Unity Package Manager
-- **Laptop path**: `C:\Users\casey\Documents\unityProjects\egtkWorkingProject\eventGameToolKit-Package\`
-- **Desktop path**: `F:\Unity Projects 2025\eventGameToolKit-Package\`
+- `ClothingCategory` enum is the **single authoritative source** defined in `Data/ClothingCategory.cs` — do not redefine it in other files.
+- `CharacterProfile` is a runtime singleton (never serialized) that carries character appearance choices from Scene 1 to Scene 2.
+- `OutfitScorer` scoring: `(items × basePoints) + (themeMatches × themeBonus) + completeOutfitBonus`, clamped to [0, 100].
+- `ClothingImporter` auto-generates `ClothingItemData` assets from PNGs named `{item}_color{N}_x{X}_y{Y}.png` in `Assets/Art/`.
+- Scene hierarchies can be auto-built via **Dress To Impress** menu items in the Unity Editor (the two `SceneSetup_` editor scripts).
 
-### **CRITICAL SYNC RULE**
+## Git Repository
 
-Before pushing to git, ALWAYS sync both repositories:
+This is a **single-repository project** — no sync steps required.
 
-1. ✅ **Work in**: `gameToolKit/Assets/eventGameToolKit/` (this project)
-2. ✅ **Test in**: `gameToolKit/` (full Unity project with scenes)
-3. ✅ **Sync to package**: Use robocopy command (see below)
-4. ✅ **Push together**: ALWAYS push both repos at the same time (never just one!)
+- **Remote**: `https://github.com/caseyfarina/egtk_DressTemplate`
+- **Branch**: `main`
+- **Push**: `git push origin HEAD:main`
 
-**Sync Command (Laptop)**:
-```bash
-cmd //c robocopy "C:\Users\casey\Documents\unityProjects\egtkWorkingProject\gameToolKit\Assets\eventGameToolKit" "C:\Users\casey\Documents\unityProjects\egtkWorkingProject\eventGameToolKit-Package" //MIR //XD .git
-```
-
-**Sync Command (Desktop)**:
-```bash
-cmd //c robocopy "F:\Unity Projects 2025\gameToolKitFarina\gameToolKit\Assets\eventGameToolKit" "F:\Unity Projects 2025\eventGameToolKit-Package" //MIR //XD .git
-```
-
-**IMPORTANT**: Use `cmd //c` and double slashes `//` to avoid Git Bash path conversion errors (Git Bash converts `/MIR` to `C:/Program Files/Git/MIR` without the double slashes).
+Standard workflow: make changes → test in Unity → commit → push.
 
 ## Project Structure
 
-### Main Directories
-
 ```
 Assets/
-├── eventGameToolKit/
-│   ├── Runtime/           # All student-facing components
-│   │   ├── Actions/       # Event targets (spawning, UI, audio, etc.)
-│   │   ├── Animation/     # Transform animations
-│   │   ├── CharacterControllers/  # Player and enemy controllers
-│   │   ├── Game/          # Managers (health, timer, state, audio, etc.)
-│   │   ├── Input/         # Event sources (triggers, keys, mouse, etc.)
-│   │   ├── Interfaces/    # Core interfaces (ISpawnPointProvider)
-│   │   ├── Physics/       # Bumpers, platforms, physics systems
-│   │   ├── Puzzle/        # Puzzle mechanics
-│   │   ├── UI/            # UI helpers and effects
-│   │   ├── Utilities/     # Legacy/helper scripts
-│   │   └── Variables/     # ⚠️ FEATURE BRANCH: ScriptableObject variables
-│   └── Editor/            # Custom Inspector scripts
-│       ├── ActionEditors/
-│       ├── GameEditors/
-│       ├── InputEditors/
-│       ├── PhysicsEditors/
-│       └── PuzzleEditors/
-├── Scenes/                # Test scenes
-└── Materials/             # Shared materials
-```
-
-### Key Files
-
-- **`InputSystem_Actions.inputactions`** - Unity Input System configuration
-- **`CharacterControllerCC_Documentation.md`** - Complete character controller guide
-- **`DecalAnimationSystem_Documentation.md`** - URP decal animation guide
+├── DressToImpress/
+│   ├── Scripts/
+│   │   ├── Data/          # Enums and ScriptableObjects (ClothingCategory, ClothingItemData, JudgeData, CharacterProfile)
+│   │   ├── Game/          # Core game logic (CharacterDisplay, OutfitScorer, JudgeManager, etc.)
+│   │   ├── Input/         # 2D sprite interaction (InputSpriteClick, InputSpriteDrag)
+│   │   ├── UI/            # Clothing panel UI (ClothingPanelManager)
+│   │   └── Editor/        # Editor tools (ClothingImporter, SceneSetup scripts)
+│   └── Documentation/
+│       ├── ProgramFlow.md         # Mermaid flowchart of full system
+│       ├── ComponentReference.md  # Component guide
+│       └── QuickStart.md          # Setup guide
+├── Art/                   # Source PNGs for ClothingImporter (naming: {item}_color{N}_x{X}_y{Y}.png)
+├── Scenes/                # Game scenes
+└── eventGameToolKit/      # egtk framework package (Input System, URP, DOTween, etc.)
 
 ## Unity Packages Used
 
@@ -233,22 +195,23 @@ See **[Documentation Generator Guide](.claude/docs/documentation-generator.md)**
 
 ### Running the Project
 1. Open in Unity 6 Editor
-2. Press Play (Ctrl+P) to test
-3. Open main scene: `Assets/Scenes/ballPlayer.unity`
+2. Open the Character Creation scene or Styling Room scene under `Assets/Scenes/`
+3. Press Play (Ctrl+P) to test
+
+### Rebuilding Scenes from Scratch
+Use the Unity menu items created by the editor setup scripts:
+- **Dress To Impress > Setup Scene — Character Creation**
+- **Dress To Impress > Setup Scene — Styling Room**
+
+These auto-build the full hierarchy and wire all component references.
+
+### Importing New Clothing Art
+1. Drop PNGs into `Assets/Art/` using naming convention: `{itemName}_color{N}_x{X}_y{Y}.png`
+2. Run **Dress To Impress > Import Clothing** (ClothingImporter EditorWindow)
+3. Assets are created/updated in `Assets/DressToImpress/Data/{Category}/`
 
 ### Building
 - Build Settings: Ctrl+Shift+B
-- Test Framework: Window > General > Test Runner
-
-### Syncing Repositories
-1. Make changes in `gameToolKit/Assets/eventGameToolKit/`
-2. Test thoroughly in Unity
-3. Run robocopy sync command (see above)
-4. Test package in clean Unity project
-5. Push both repos together
-
-### Example Scenes
-Example scenes live in `Assets/eventGameToolKit/ExampleScenes/`. Add new ones directly as Unity scene files — no code-based generators.
 
 ## Custom Slash Commands
 
@@ -317,132 +280,6 @@ Students using `GameInventorySlot` will need to:
 
 ## Getting Help
 
-- **Script Reference**: See [Runtime Structure](.claude/docs/runtime-structure.md)
-- **Custom Editors**: See [Custom Editors Guide](.claude/docs/custom-editors.md)
-- **Physics Patterns**: See [Development Patterns](.claude/docs/development-patterns.md)
-- **Recent Changes**: See [Changelog](.claude/docs/changelog.md)
-
-## Quick Reference
-
-**61 Educational Scripts (100% XML Documented) | 25 Custom Editors**
-- 12 Input components
-- 20 Action components
-- 7 Physics components
-- 12 Game managers (includes GameSceneManager + SpawnPoint)
-- 2 Puzzle components
-- 1 UI component
-- 3 Animation components
-- 3 Root character controllers
-- 1 ScriptableObject variable (GameData — internal, invisible to students)
-
-For complete script inventory with features, see **[Runtime Structure](.claude/docs/runtime-structure.md)**.
-
----
-
-## Multi-Scene Architecture
-
-### The Problem
-
-The toolkit's no-code design relies on dragging references in the Inspector. This breaks with multi-scene games because:
-- UnityEvents can't reference objects in other scenes
-- Managers in a "Bootstrap" scene can't be wired to enemies/collectibles in level scenes
-- Cross-scene references are blocked in Edit mode
-
-### The Solution: ScriptableObject Variables
-
-Instead of storing data in MonoBehaviours (which are scene-bound), data lives in **ScriptableObject assets** (which are project-level):
-
-```
-Project Assets:
-├── Variables/
-│   ├── PlayerHealth.asset (IntVariable, default: 100)
-│   └── PlayerScore.asset (IntVariable, default: 0)
-
-Level1 Scene:
-├── GameHealthManager → reads/writes PlayerHealth.asset
-├── Enemy → wired to GameHealthManager.TakeDamage()
-└── Coin → wired to GameCollectionManager.Increment()
-
-Level2 Scene:
-├── GameHealthManager → reads/writes PlayerHealth.asset (SAME asset)
-└── ... level content
-```
-
-When scenes change, manager instances are destroyed and recreated, but **the data persists in the assets**.
-
-### New Components (Feature Branch)
-
-| Component | Location | Purpose |
-|-----------|----------|---------|
-| `IntVariable` | `Runtime/Variables/` | SO that holds an int, resets on Play |
-| `FloatVariable` | `Runtime/Variables/` | SO that holds a float, resets on Play |
-| `SpawnPoint` | `Runtime/Game/` | Marks spawn locations, implements ISpawnPointProvider |
-| `GameSceneManager` | `Runtime/Game/` | Scene loading with spawn point support |
-
-### Updated Components (Feature Branch)
-
-| Component | Change |
-|-----------|--------|
-| `GameHealthManager` | New `healthVariable` field (optional) |
-| `GameCollectionManager` | New `valueVariable` field (optional) |
-| `CharacterControllerCC` | Improved spawn priority logic |
-
-### Backward Compatibility
-
-The SO variable fields are **optional**. If not assigned:
-- Managers work exactly as before (single-scene behavior)
-- No breaking changes for existing projects
-
-### Value Reset Behavior
-
-```csharp
-// IntVariable uses [System.NonSerialized] for runtime value
-// OnEnable() resets the initialized flag
-// First access initializes from defaultValue
-```
-
-- **Editor**: Values reset to default when entering Play mode
-- **Build**: Values reset when game launches, persist during gameplay
-
-### Future SO Architecture Opportunities
-
-The ScriptableObject pattern could improve other systems:
-
-| System | Current | SO-Based Improvement |
-|--------|---------|---------------------|
-| **GameStateManager** | Local pause state | `BoolVariable` for global pause state |
-| **GameTimerManager** | Local timer value | `FloatVariable` for persistent timer |
-| **GameAudioManager** | Local volume settings | `FloatVariable` for volume levels |
-| **GameCheckpointManager** | Already uses DontDestroyOnLoad | Could use SO for checkpoint data |
-| **PuzzleSwitchChecker** | Checks switches in scene | `BoolVariable` per switch for cross-scene puzzles |
-
-### Event Channels (Future Consideration)
-
-Beyond variables, SO-based **Event Channels** could enable fully decoupled communication:
-
-```csharp
-// Event channel asset
-[CreateAssetMenu]
-public class VoidEventChannel : ScriptableObject
-{
-    public event System.Action OnEventRaised;
-    public void RaiseEvent() => OnEventRaised?.Invoke();
-}
-
-// Any scene can raise/listen
-public class Enemy : MonoBehaviour
-{
-    [SerializeField] VoidEventChannel onPlayerDamaged;
-    void DealDamage() => onPlayerDamaged.RaiseEvent();
-}
-```
-
-This would allow enemies in Level1 to communicate with UI in a persistent scene without direct references.
-
-### Documentation
-
-- **[MultiSceneSetup_QuickStart.md](Assets/eventGameToolKit/Documentation/MultiSceneSetup_QuickStart.md)** - Student guide (in feature branch)
-
-### Merge Status
-
-Multi-scene components were cherry-picked from `feature/multi-scene-support` into main (April 2026). The feature branch can be archived — it contains destructive changes (deleted components) that should NOT be merged directly.
+- **Program Flow**: See [ProgramFlow.md](Assets/DressToImpress/Documentation/ProgramFlow.md)
+- **Component Reference**: See [ComponentReference.md](Assets/DressToImpress/Documentation/ComponentReference.md)
+- **Setup Guide**: See [QuickStart.md](Assets/DressToImpress/Documentation/QuickStart.md)
