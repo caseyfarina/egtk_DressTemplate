@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir -p \"C:\\\\Users\\\\casey\\\\Documents\\\\unityProjects\\\\egtkTemplateProject_3\\\\egtkTemplateProject\\\\Assets\\\\DressToImpress\\\\Scripts\\\\Input\")",
+      "Bash(mkdir -p \"C:\\\\Users\\\\casey\\\\Documents\\\\unityProjects\\\\egtkTemplateProject_3\\\\egtkTemplateProject\\\\Assets\\\\DressToImpress\\\\Scripts\\\\Game\")"
+    ]
+  }
+}
