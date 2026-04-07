@@ -2,18 +2,6 @@ using UnityEngine;
 using UnityEngine.Events;
 
 /// <summary>
-/// Clothing category — must match the category expected by the target DressUpSlot.
-/// </summary>
-public enum ClothingCategory
-{
-    Hat,
-    Top,
-    Bottom,
-    Shoes,
-    Accessory
-}
-
-/// <summary>
 /// Data component attached to each clothing sprite in the scene.
 /// Defines the item's category, base style score, and theme tags used by OutfitScorer.
 /// Pair with InputSpriteDrag so the player can drag it onto a DressUpSlot.
