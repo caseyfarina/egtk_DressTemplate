@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 25204e8f3d5a2594c9f92a9d86685630, type: 3}
+  m_Name: Gjeans1_color1_color1
+  m_EditorClassIdentifier: Assembly-CSharp::ClothingItemData
+  itemName: Low-Rise Jeans
+  sprite: {fileID: 21300000, guid: 909e36d3bcf414042bc74feb23958ab0, type: 3}
+  category: 2
+  canvasX: 426
+  canvasY: 571
+  colorVariantIndex: 1
+  groupName: Gjeans1_color1
+  styleScore: 10
+  themeTags:
+  - basic
+  - girly

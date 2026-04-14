@@ -51,6 +51,7 @@ public class CharacterDisplay : MonoBehaviour
         { ClothingCategory.Bottom,        20 },
         { ClothingCategory.Skirt,         20 },
         { ClothingCategory.Shoes,         25 },
+        //{ ClothingCategory.Inner,         35 },
         { ClothingCategory.Top,           30 },
         { ClothingCategory.Dress,         30 },
         { ClothingCategory.Outerwear,     35 },
@@ -188,10 +189,12 @@ public class CharacterDisplay : MonoBehaviour
         if (item.Category == ClothingCategory.Dress)
         {
             SilentUnequip(ClothingCategory.Top);
+            //SilentUnequip(ClothingCategory.Inner);
             SilentUnequip(ClothingCategory.Bottom);
             SilentUnequip(ClothingCategory.Skirt);
         }
         else if (item.Category == ClothingCategory.Top   ||
+                 //item.Category == ClothingCategory.Inner  ||
                  item.Category == ClothingCategory.Bottom ||
                  item.Category == ClothingCategory.Skirt)
         {
@@ -244,6 +247,7 @@ public class CharacterDisplay : MonoBehaviour
 
         UnequipCategory(ClothingCategory.Hat);
         UnequipCategory(ClothingCategory.Top);
+        //UnequipCategory(ClothingCategory.Inner);
         UnequipCategory(ClothingCategory.Bottom);
         UnequipCategory(ClothingCategory.Skirt);
         UnequipCategory(ClothingCategory.Dress);
@@ -279,6 +283,7 @@ public class CharacterDisplay : MonoBehaviour
         {
             ClothingCategory.Hat,
             ClothingCategory.Top,
+            //ClothingCategory.Inner,
             ClothingCategory.Bottom,
             ClothingCategory.Skirt,
             ClothingCategory.Dress,

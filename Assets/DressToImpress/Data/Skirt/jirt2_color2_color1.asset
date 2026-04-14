@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 25204e8f3d5a2594c9f92a9d86685630, type: 3}
+  m_Name: jirt2_color2_color1
+  m_EditorClassIdentifier: Assembly-CSharp::ClothingItemData
+  itemName: Denim Maxi Skirt
+  sprite: {fileID: 21300000, guid: fcdcbdf0bd63cae4f8c29729af0a4810, type: 3}
+  category: 5
+  canvasX: 427
+  canvasY: 573
+  colorVariantIndex: 1
+  groupName: jirt2_color2
+  styleScore: 10
+  themeTags:
+  - punk
+  - basic
+  - girly

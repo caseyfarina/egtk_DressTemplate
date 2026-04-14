@@ -1,0 +1,3 @@
+Add clothing categories
+character creation missing buttons
+art is misaligned in styling room scene

@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 25204e8f3d5a2594c9f92a9d86685630, type: 3}
+  m_Name: Base1_(small)_color2
+  m_EditorClassIdentifier: Assembly-CSharp::ClothingItemData
+  itemName: Base1_(small)
+  sprite: {fileID: 21300000, guid: e048fb51bdb7b40409111c35c5e449d1, type: 3}
+  category: 16
+  canvasX: 357
+  canvasY: 145
+  colorVariantIndex: 2
+  groupName: Base1_(small)
+  styleScore: 10
+  themeTags: []

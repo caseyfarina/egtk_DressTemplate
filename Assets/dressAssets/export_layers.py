@@ -37,7 +37,7 @@ FOLDER_MAP = {
     ("clothes", "hats"):         "Assets/Art/Clothing/Hats",
     ("hair",    "front"):        "Assets/Art/Hair/Front",
     ("hair",    "back"):         "Assets/Art/Hair/Back",
-    ("brows",   ""):             "Assets/Art/FacialFeatures/Eyebrows",
+    ("brows",   "brows"):             "Assets/Art/FacialFeatures/Eyebrows",
     ("body",    "eyes"):         "Assets/Art/FacialFeatures/Eyes",
     ("body",    "ears"):         "Assets/Art/FacialFeatures/Ears",
     ("body",    "mouths"):       "Assets/Art/FacialFeatures/Mouths",
