@@ -45,6 +45,9 @@ This is a standalone Unity project and single git repository that implements a d
 - `OutfitScorer` scoring: `(items × basePoints) + (themeMatches × themeBonus) + completeOutfitBonus`, clamped to [0, 100].
 - `ClothingImporter` auto-generates `ClothingItemData` assets from PNGs named `{item}_color{N}_x{X}_y{Y}.png` in `Assets/Art/`.
 - Scene hierarchies can be auto-built via **Dress To Impress** menu items in the Unity Editor (the two `SceneSetup_` editor scripts).
+- **Styling Room camera** uses `orthographicSize = 5.5`. `[CharacterRoot]` is positioned at world `(4.08, -3.36, 0)` to center the body art (which is painted in the upper-left quadrant of the 2048×2048 Krita canvas) in the camera view.
+- `CharacterDisplay.NonClothingCategories` is a static `HashSet` listing face/hair categories excluded from scoring and `UnequipAllClothing`. All other enum values are treated as scoreable clothing slots automatically — **do not add new clothing categories to this set**.
+- `JudgeManager` events `onJudgeNameSet`, `onStyleTagSet`, `onPromptSet`, and `onJudgeDialogue` are wired to their TMP fields by `SceneSetup_StylingRoom` automatically on rebuild. `onAvatarSet` → `[AvatarImage].sprite` and `onMoneyAwarded` → money display must be wired manually in the Inspector (property-setter limitation).
 
 ## Git Repository
 
@@ -203,7 +206,11 @@ Use the Unity menu items created by the editor setup scripts:
 - **Dress To Impress > Setup Scene — Character Creation**
 - **Dress To Impress > Setup Scene — Styling Room**
 
-These auto-build the full hierarchy and wire all component references.
+These auto-build the full hierarchy and wire all component references. After rebuilding the Styling Room scene, two steps remain manual:
+1. Wire `JudgeManager.onAvatarSet` → `[AvatarImage]` Image component (Inspector)
+2. Wire `JudgeManager.onMoneyAwarded` → your money display (e.g. `GameCollectionManager.Increment`)
+3. Assign `JudgeData` ScriptableObjects to `JudgeManager.judges` array
+4. Assign `ClothingItemData` assets to `ClothingPanelManager.allClothingItems`
 
 ### Importing New Clothing Art
 1. Drop PNGs into `Assets/Art/` using naming convention: `{itemName}_color{N}_x{X}_y{Y}.png`
