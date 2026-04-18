@@ -245,16 +245,11 @@ public class CharacterDisplay : MonoBehaviour
     {
         if (!CheckInitialized(nameof(UnequipAllClothing))) return;
 
-        UnequipCategory(ClothingCategory.Hat);
-        UnequipCategory(ClothingCategory.Top);
-        //UnequipCategory(ClothingCategory.Inner);
-        UnequipCategory(ClothingCategory.Bottom);
-        UnequipCategory(ClothingCategory.Skirt);
-        UnequipCategory(ClothingCategory.Dress);
-        UnequipCategory(ClothingCategory.Shoes);
-        UnequipCategory(ClothingCategory.SocksLeggings);
-        UnequipCategory(ClothingCategory.Outerwear);
-        UnequipCategory(ClothingCategory.Accessory);
+        foreach (ClothingCategory cat in System.Enum.GetValues(typeof(ClothingCategory)))
+        {
+            if (!NonClothingCategories.Contains(cat))
+                UnequipCategory(cat);
+        }
     }
 
     /// <summary>
@@ -274,29 +269,28 @@ public class CharacterDisplay : MonoBehaviour
     /// face features and hair are excluded).
     /// </summary>
     /// <returns>A new list containing only clothing-slot items.</returns>
+    // Categories that are character features, not scoreable clothing slots.
+    private static readonly HashSet<ClothingCategory> NonClothingCategories = new HashSet<ClothingCategory>
+    {
+        ClothingCategory.Body,
+        ClothingCategory.FrontHair,
+        ClothingCategory.BackHair,
+        ClothingCategory.Eyes,
+        ClothingCategory.Eyebrows,
+        ClothingCategory.Mouth,
+        ClothingCategory.Ears,
+        ClothingCategory.Nose,
+    };
+
     public List<ClothingItemData> GetAllEquippedClothing()
     {
         var result = new List<ClothingItemData>();
         if (_equippedItems == null) return result;
 
-        ClothingCategory[] clothingCategories =
+        foreach (var kvp in _equippedItems)
         {
-            ClothingCategory.Hat,
-            ClothingCategory.Top,
-            //ClothingCategory.Inner,
-            ClothingCategory.Bottom,
-            ClothingCategory.Skirt,
-            ClothingCategory.Dress,
-            ClothingCategory.Shoes,
-            ClothingCategory.SocksLeggings,
-            ClothingCategory.Outerwear,
-            ClothingCategory.Accessory,
-        };
-
-        foreach (ClothingCategory cat in clothingCategories)
-        {
-            if (_equippedItems.TryGetValue(cat, out ClothingItemData item) && item != null)
-                result.Add(item);
+            if (!NonClothingCategories.Contains(kvp.Key) && kvp.Value != null)
+                result.Add(kvp.Value);
         }
 
         return result;

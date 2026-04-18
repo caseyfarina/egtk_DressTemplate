@@ -278,6 +278,8 @@ Open `Assets/DressToImpress/Scripts/Game/CharacterDisplay.cs`. Find the `Sorting
 
 Higher numbers render in front. Choose a value that makes sense for layering (e.g. gloves go over an outerwear jacket but under earrings).
 
+> `NonClothingCategories` in the same file controls which categories are excluded from scoring and `UnequipAllClothing`. Clothing categories (Hat, Top, Gloves, etc.) do **not** need to be listed there — only character-feature categories (Body, Hair, Eyes, etc.) belong in that set.
+
 ### Step 3 — Add the Krita folder mapping
 
 Open `Assets/dressAssets/export_layers.py`. Find the `FOLDER_MAP` dictionary and add a line:
@@ -302,9 +304,11 @@ This must appear **before** the `category = default; return false;` line at the 
 
 If equipping this item should automatically remove another category (like how Dress removes Top + Bottom), open `CharacterDisplay.cs` and update the `EquipItem` method's exclusivity block.
 
-### Step 6 — (Optional) Add it to the clothing panel
+### Step 6 — Add it to the clothing panel
 
-Open the Styling Room scene, select the `ClothingPanel` GameObject, and find **Visible Categories** on the `ClothingPanelManager` component. Add `Gloves` to the list. This adds a new tab in the clothing selection UI.
+Open the Styling Room scene, select the `[ClothingPanel]` GameObject, and find **Visible Categories** on the `ClothingPanelManager` component. Add `Gloves` to the list — this is required for the new category to appear as a tab in the clothing selection UI and for its items to be shown to the player.
+
+> Tab order in the UI follows the array order in **Visible Categories**, so place the new entry where you want it relative to existing tabs.
 
 ### Step 7 — Draw the art in Krita
 
