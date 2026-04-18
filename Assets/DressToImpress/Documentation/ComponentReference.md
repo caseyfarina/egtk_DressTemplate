@@ -90,18 +90,26 @@ A reference guide for every custom script in this template. Use the summary tabl
 
 ### Methods You Can Call from UnityEvents
 
-These are the methods to wire to your **Previous** and **Next** arrow buttons. Pass an integer index — 0 for the first option, 1 for the second, and so on. Typically you'll use a small helper or just wire the buttons to increment/decrement a counter.
+The setup script wires the **Previous** and **Next** arrow buttons in each selection row automatically. The `Next*` / `Prev*` methods wrap around (going past the last item cycles back to the first, and vice versa). The `Select*(int)` methods set an explicit index — useful for resetting or applying a saved profile.
 
 | Method | What it does |
 |---|---|
-| `SelectBodyType(int)` | Sets the body type to the given index. |
-| `SelectFrontHair(int)` | Sets the front hair to the given index. |
-| `SelectBackHair(int)` | Sets the back hair to the given index. |
-| `SelectEyes(int)` | Sets the eyes to the given index. |
-| `SelectEyebrows(int)` | Sets the eyebrows to the given index. |
-| `SelectMouth(int)` | Sets the mouth to the given index. |
-| `SelectEars(int)` | Sets the ears to the given index. |
-| `SelectNose(int)` | Sets the nose to the given index. |
+| `NextBodyType()` / `PrevBodyType()` | Advance or retreat through body type options, wrapping at the ends. |
+| `NextFrontHair()` / `PrevFrontHair()` | Cycle through front hair options. |
+| `NextBackHair()` / `PrevBackHair()` | Cycle through back hair options. |
+| `NextEyes()` / `PrevEyes()` | Cycle through eye options. |
+| `NextEyebrows()` / `PrevEyebrows()` | Cycle through eyebrow options. |
+| `NextMouth()` / `PrevMouth()` | Cycle through mouth options. |
+| `NextEars()` / `PrevEars()` | Cycle through ear options. |
+| `NextNose()` / `PrevNose()` | Cycle through nose options. |
+| `SelectBodyType(int)` | Sets the body type to the given index directly. |
+| `SelectFrontHair(int)` | Sets the front hair to the given index directly. |
+| `SelectBackHair(int)` | Sets the back hair to the given index directly. |
+| `SelectEyes(int)` | Sets the eyes to the given index directly. |
+| `SelectEyebrows(int)` | Sets the eyebrows to the given index directly. |
+| `SelectMouth(int)` | Sets the mouth to the given index directly. |
+| `SelectEars(int)` | Sets the ears to the given index directly. |
+| `SelectNose(int)` | Sets the nose to the given index directly. |
 | `ApplyAllSelections()` | Re-applies all current selections to the display. Useful after loading a saved profile. |
 | `OnStartStyling()` | Saves the profile and loads the Styling Room scene. Wire this to the START STYLING button. |
 
@@ -337,9 +345,12 @@ Wire these to your UI buttons:
 
 ### "Clothing items appear in the wrong position on the character"
 
-- Your camera's **Orthographic Size** should be **10.24** for a 2048×2048 canvas at 100 pixels per unit. Check this on the Main Camera in the Character Creation scene.
 - Make sure the **Pixels Per Unit** on `CharacterDisplay` matches the **Pixels Per Unit** set in the sprite's import settings (the default for both is 100).
 - Canvas X and Canvas Y on each ClothingItemData are set by the importer. If items look shifted, re-run the export from Krita and re-run the importer.
+- The two scenes use **different camera setups** — do not mix them up:
+  - **Character Creation**: `Orthographic Size = 10.24`, `[CharacterRoot]` at world `(0, 0, 0)`.
+  - **Styling Room**: `Orthographic Size = 5.5`, `[CharacterRoot]` at world `(4.08, −3.36, 0)`. The offset is intentional — it compensates for the body art being positioned left-of-center on the 2048 × 2048 canvas so the character is centered in the smaller camera view.
+- If `[CharacterRoot]` is at the wrong position in the Styling Room, run **Dress To Impress → Setup Scene — Styling Room** to rebuild with the correct values.
 
 ### "Clicking clothing buttons does nothing"
 

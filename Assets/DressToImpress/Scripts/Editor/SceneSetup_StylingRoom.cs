@@ -43,7 +43,8 @@ public static class SceneSetup_StylingRoom
         // ── CharacterRoot ─────────────────────────────────────────────────────────
         GameObject characterRootGO = new GameObject("[CharacterRoot]");
         Undo.RegisterCreatedObjectUndo(characterRootGO, "Create Styling Room Scene");
-        characterRootGO.transform.position = Vector3.zero;
+        // Offset so body center (local -4.08, 3.86) lands at world (0, 0.5) within orthoSize=5.5 camera
+        characterRootGO.transform.position = new Vector3(4.08f, -3.36f, 0f);
         CharacterDisplay characterDisplay = characterRootGO.AddComponent<CharacterDisplay>();
 
         // ── Managers parent ───────────────────────────────────────────────────────
@@ -222,6 +223,23 @@ public static class SceneSetup_StylingRoom
         promptTMP.enableWordWrapping = true;
         promptTMP.alignment      = TextAlignmentOptions.TopLeft;
 
+        // DialogueText — judge reaction after outfit is submitted
+        GameObject dialogueTextGO = CreateUIObject("[DialogueText]", judgePanelGO.transform);
+        RectTransform dialogueRT = dialogueTextGO.GetComponent<RectTransform>();
+        dialogueRT.anchorMin  = new Vector2(0f, 0f);
+        dialogueRT.anchorMax  = new Vector2(1f, 0f);
+        dialogueRT.pivot      = new Vector2(0.5f, 0f);
+        dialogueRT.anchoredPosition = new Vector2(0f, 10f);
+        dialogueRT.sizeDelta  = new Vector2(-20f, 80f);
+
+        TextMeshProUGUI dialogueTMP = dialogueTextGO.AddComponent<TextMeshProUGUI>();
+        dialogueTMP.fontSize       = 16f;
+        dialogueTMP.color          = new Color(0.9f, 0.9f, 0.7f, 1f);
+        dialogueTMP.enableWordWrapping = true;
+        dialogueTMP.textWrappingMode   = TMPro.TextWrappingModes.Normal;
+        dialogueTMP.alignment          = TextAlignmentOptions.BottomLeft;
+        dialogueTMP.text               = string.Empty;
+
         // ── ClothingPanel ─────────────────────────────────────────────────────────
         GameObject clothingPanelGO = CreateUIObject("[ClothingPanel]", canvasGO.transform);
         RectTransform clothingPanelRT = clothingPanelGO.GetComponent<RectTransform>();
@@ -356,6 +374,12 @@ public static class SceneSetup_StylingRoom
         UnityEventTools.AddPersistentListener(boutiqueBtn.onClick, stylingRoomManager.OnGoToBoutique);
         UnityEventTools.AddPersistentListener(submitBtn.onClick,   stylingRoomManager.OnSubmitOutfit);
 
+        // ── Wire JudgeManager string events → TMP fields ──────────────────────────
+        WireStringEvent(judgeManager.onJudgeNameSet, judgeNameTMP);
+        WireStringEvent(judgeManager.onStyleTagSet,  styleTagTMP);
+        WireStringEvent(judgeManager.onPromptSet,    promptTMP);
+        WireStringEvent(judgeManager.onJudgeDialogue, dialogueTMP);
+
         // ── Mark scene dirty ──────────────────────────────────────────────────────
         EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene());
 
@@ -364,12 +388,10 @@ public static class SceneSetup_StylingRoom
 
         Debug.Log(
             "[DressToImpress] Styling Room scene setup complete.\n" +
+            "Auto-wired: onJudgeNameSet, onStyleTagSet, onPromptSet, onJudgeDialogue, Submit/Next/Boutique buttons.\n" +
             "Manual wiring still required:\n" +
-            "  • JudgeManager.onJudgeNameSet  → [JudgeNameText] TMP text field\n" +
-            "  • JudgeManager.onStyleTagSet   → [StyleTagText] TMP text field\n" +
-            "  • JudgeManager.onPromptSet     → [PromptText] TMP text field\n" +
-            "  • JudgeManager.onAvatarSet     → [AvatarImage] UI Image\n" +
-            "  • JudgeManager.onMoneyAwarded  → money display (e.g. GameCollectionManager.Increment)\n" +
+            "  • JudgeManager.onAvatarSet    → [AvatarImage] UI Image (property setter — must wire in Inspector)\n" +
+            "  • JudgeManager.onMoneyAwarded → money display (e.g. GameCollectionManager.Increment)\n" +
             "  • Assign JudgeData ScriptableObjects to JudgeManager.judges array\n" +
             "  • Assign ClothingItemData assets to ClothingPanelManager.allClothingItems"
         );
@@ -468,6 +490,21 @@ public static class SceneSetup_StylingRoom
         Undo.RegisterCreatedObjectUndo(go, "Create Styling Room Scene");
         go.transform.SetParent(parent, false);
         return go;
+    }
+
+    /// <summary>
+    /// Wires a UnityEvent&lt;string&gt; to TMP_Text.SetText(string) as a persistent listener.
+    /// </summary>
+    private static void WireStringEvent(UnityEvent<string> evt, TMP_Text tmp)
+    {
+        if (tmp == null) return;
+        var method = typeof(TMP_Text).GetMethod("SetText",
+            System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance,
+            null, new System.Type[] { typeof(string) }, null);
+        if (method == null) return;
+        var action = (UnityAction<string>)System.Delegate.CreateDelegate(
+            typeof(UnityAction<string>), tmp, method);
+        UnityEventTools.AddPersistentListener(evt, action);
     }
 
     /// <summary>

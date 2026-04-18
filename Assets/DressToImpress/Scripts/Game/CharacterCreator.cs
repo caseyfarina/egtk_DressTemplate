@@ -165,6 +165,48 @@ public class CharacterCreator : MonoBehaviour
         SceneManager.LoadScene(stylingRoomSceneName);
     }
 
+    // ── Next / Prev convenience methods (wire to UI buttons) ──────────────────
+
+    /// <summary>Advances to the next body type, wrapping around.</summary>
+    public void NextBodyType()    => SelectBodyType(Wrap(_bodyTypeIndex + 1, bodyTypes));
+    /// <summary>Goes back to the previous body type, wrapping around.</summary>
+    public void PrevBodyType()    => SelectBodyType(Wrap(_bodyTypeIndex - 1, bodyTypes));
+
+    /// <summary>Advances to the next front hair, wrapping around.</summary>
+    public void NextFrontHair()   => SelectFrontHair(Wrap(_frontHairIndex + 1, frontHairs));
+    /// <summary>Goes back to the previous front hair, wrapping around.</summary>
+    public void PrevFrontHair()   => SelectFrontHair(Wrap(_frontHairIndex - 1, frontHairs));
+
+    /// <summary>Advances to the next back hair, wrapping around.</summary>
+    public void NextBackHair()    => SelectBackHair(Wrap(_backHairIndex + 1, backHairs));
+    /// <summary>Goes back to the previous back hair, wrapping around.</summary>
+    public void PrevBackHair()    => SelectBackHair(Wrap(_backHairIndex - 1, backHairs));
+
+    /// <summary>Advances to the next eyes option, wrapping around.</summary>
+    public void NextEyes()        => SelectEyes(Wrap(_eyesIndex + 1, eyes));
+    /// <summary>Goes back to the previous eyes option, wrapping around.</summary>
+    public void PrevEyes()        => SelectEyes(Wrap(_eyesIndex - 1, eyes));
+
+    /// <summary>Advances to the next eyebrows option, wrapping around.</summary>
+    public void NextEyebrows()    => SelectEyebrows(Wrap(_eyebrowsIndex + 1, eyebrows));
+    /// <summary>Goes back to the previous eyebrows option, wrapping around.</summary>
+    public void PrevEyebrows()    => SelectEyebrows(Wrap(_eyebrowsIndex - 1, eyebrows));
+
+    /// <summary>Advances to the next mouth option, wrapping around.</summary>
+    public void NextMouth()       => SelectMouth(Wrap(_mouthIndex + 1, mouths));
+    /// <summary>Goes back to the previous mouth option, wrapping around.</summary>
+    public void PrevMouth()       => SelectMouth(Wrap(_mouthIndex - 1, mouths));
+
+    /// <summary>Advances to the next ears option, wrapping around.</summary>
+    public void NextEars()        => SelectEars(Wrap(_earsIndex + 1, ears));
+    /// <summary>Goes back to the previous ears option, wrapping around.</summary>
+    public void PrevEars()        => SelectEars(Wrap(_earsIndex - 1, ears));
+
+    /// <summary>Advances to the next nose option, wrapping around.</summary>
+    public void NextNose()        => SelectNose(Wrap(_noseIndex + 1, noses));
+    /// <summary>Goes back to the previous nose option, wrapping around.</summary>
+    public void PrevNose()        => SelectNose(Wrap(_noseIndex - 1, noses));
+
     /// <summary>Applies all current index selections to the CharacterDisplay.</summary>
     public void ApplyAllSelections()
     {
@@ -188,6 +230,12 @@ public class CharacterCreator : MonoBehaviour
     /// <param name="index">The requested index (will be clamped).</param>
     /// <param name="applyAction">Callback that applies the selected item to the CharacterDisplay.</param>
     /// <param name="storedIndex">The field that stores the current selection index (updated in place).</param>
+    private static int Wrap(int index, ClothingItemData[] array)
+    {
+        if (array == null || array.Length == 0) return 0;
+        return ((index % array.Length) + array.Length) % array.Length;
+    }
+
     private void SelectFeature(ClothingItemData[] array, int index,
         System.Action<ClothingItemData> applyAction, ref int storedIndex)
     {
