@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 25204e8f3d5a2594c9f92a9d86685630, type: 3}
+  m_Name: Ankle Socks (White)_color1
+  m_EditorClassIdentifier: Assembly-CSharp::ClothingItemData
+  itemName: Ankle Socks (White)
+  sprite: {fileID: 21300000, guid: 2e84ffd13754f16468e607fed9df3941, type: 3}
+  category: 7
+  canvasX: 357
+  canvasY: 916
+  colorVariantIndex: 1
+  groupName: Ankle Socks (White)
+  styleScore: 10
+  themeTags:
+  - glam
+  - punk
+  - girly
+  - basic

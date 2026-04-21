@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ae77f7b7273126149868d92b0a05f2e6, type: 3}
+  m_Name: Judge1_Madison
+  m_EditorClassIdentifier: Assembly-CSharp::JudgeData
+  judgeName: Madison
+  styleTag: Girly
+  avatarSprite: {fileID: 0}
+  accentColor: {r: 1, g: 0.51886785, b: 0.81946623, a: 1}
+  promptText: I need a cute outfit for my date tonight, please!
+  themeTags:
+  - girly
+  dialogueExcellent:
+  - Wow! This is so cute, thank you!
+  dialogueGood:
+  - This is nice but I think it's messing something. It'll do for tonight, thanks!
+  dialoguePoor:
+  - Oh...My date might think I look silly with this, no? Thanks anyway.
+  moneyRewardExcellent: 200
+  moneyRewardGood: 100
+  moneyRewardPoor: 25

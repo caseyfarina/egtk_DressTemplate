@@ -45,7 +45,7 @@ public class CharacterDisplay : MonoBehaviour
     private static readonly Dictionary<ClothingCategory, int> SortingOrders
         = new Dictionary<ClothingCategory, int>
     {
-        { ClothingCategory.BackHair,      0  },
+        { ClothingCategory.BackHair,      30  },
         { ClothingCategory.BodyBase,      10 },
         { ClothingCategory.SocksLeggings, 15 },
         { ClothingCategory.Bottom,        20 },
@@ -272,7 +272,7 @@ public class CharacterDisplay : MonoBehaviour
     // Categories that are character features, not scoreable clothing slots.
     private static readonly HashSet<ClothingCategory> NonClothingCategories = new HashSet<ClothingCategory>
     {
-        ClothingCategory.Body,
+        ClothingCategory.BodyBase,
         ClothingCategory.FrontHair,
         ClothingCategory.BackHair,
         ClothingCategory.Eyes,
