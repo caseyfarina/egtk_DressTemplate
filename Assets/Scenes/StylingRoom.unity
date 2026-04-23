@@ -1786,7 +1786,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1078755674
 RectTransform:
   m_ObjectHideFlags: 0
@@ -2615,6 +2615,117 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 50, y: -30, z: 0}
+--- !u!1 &1924861012
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1924861014}
+  - component: {fileID: 1924861013}
+  m_Layer: 0
+  m_Name: GameCollectionManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1924861013
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1924861012}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8cec22a870217a64f956943aeb1243ba, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: EventGameToolkit.Runtime::GameCollectionManager
+  persistAcrossScenes: 0
+  currentValue: 0
+  minValue: 0
+  maxValue: 500
+  thresholds:
+  - value: 10
+    onCrossedUp:
+      m_PersistentCalls:
+        m_Calls: []
+    onCrossedDown:
+      m_PersistentCalls:
+        m_Calls: []
+  showUI: 1
+  labelPrefix: $
+  textPosition: {x: 40, y: -10}
+  fontSize: 45.2
+  textAlignment: 257
+  textColor: {r: 1, g: 1, b: 1, a: 1}
+  customFont: {fileID: 11400000, guid: 0f7e00fc7a9c3473a9bddc92b3015715, type: 2}
+  valueAnimation: 1
+  animationDuration: 0.3
+  animationStrength: 0.2
+  showBar: 0
+  barPosition: {x: 60, y: -80}
+  barSize: {x: 200, y: 20}
+  barBackgroundColor: {r: 0.2, g: 0.2, b: 0.2, a: 0.8}
+  barGradient:
+    serializedVersion: 2
+    key0: {r: 0.9, g: 0.15, b: 0.1, a: 1}
+    key1: {r: 1, g: 0.95, b: 0.2, a: 1}
+    key2: {r: 0.25, g: 0.9, b: 0.1, a: 0}
+    key3: {r: 0, g: 0, b: 0, a: 0}
+    key4: {r: 0, g: 0, b: 0, a: 0}
+    key5: {r: 0, g: 0, b: 0, a: 0}
+    key6: {r: 0, g: 0, b: 0, a: 0}
+    key7: {r: 0, g: 0, b: 0, a: 0}
+    ctime0: 0
+    ctime1: 32768
+    ctime2: 65535
+    ctime3: 0
+    ctime4: 0
+    ctime5: 0
+    ctime6: 0
+    ctime7: 0
+    atime0: 0
+    atime1: 65535
+    atime2: 0
+    atime3: 0
+    atime4: 0
+    atime5: 0
+    atime6: 0
+    atime7: 0
+    m_Mode: 0
+    m_ColorSpace: -1
+    m_NumColorKeys: 3
+    m_NumAlphaKeys: 2
+  animateBar: 1
+  barAnimationDuration: 0.2
+  onValueChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  onMaxReached:
+    m_PersistentCalls:
+      m_Calls: []
+  onMinReached:
+    m_PersistentCalls:
+      m_Calls: []
+--- !u!4 &1924861014
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1924861012}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 205.89885, y: 891.8045, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1960972990
 GameObject:
   m_ObjectHideFlags: 0
@@ -2747,7 +2858,19 @@ MonoBehaviour:
         m_CallState: 2
   onMoneyAwarded:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1924861013}
+        m_TargetAssemblyTypeName: GameCollectionManager, EventGameToolkit.Runtime
+        m_MethodName: Increment
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
   onRatingDetermined:
     m_PersistentCalls:
       m_Calls: []
@@ -3245,7 +3368,19 @@ MonoBehaviour:
   maxScore: 100
   onScoreCalculated:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1924861013}
+        m_TargetAssemblyTypeName: GameCollectionManager, EventGameToolkit.Runtime
+        m_MethodName: SetValue
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
   onRatingExcellent:
     m_PersistentCalls:
       m_Calls: []
@@ -3415,3 +3550,4 @@ SceneRoots:
   - {fileID: 2003004608}
   - {fileID: 1722937819}
   - {fileID: 757282254}
+  - {fileID: 1924861014}
