@@ -22,16 +22,13 @@ public class CharacterDisplay : MonoBehaviour
     [Tooltip("Parent transform for all generated sprite renderers. Leave empty to use this transform.")]
     [SerializeField] private Transform layerRoot;
 
-    [Header("Character Creation Data")]
-    [Tooltip("All body type options (BodyBase category)")]
-    [SerializeField] private ClothingItemData[] bodyTypes;
-    [SerializeField] private ClothingItemData[] frontHairs;
-    [SerializeField] private ClothingItemData[] backHairs;
-    [SerializeField] private ClothingItemData[] eyes;
-    [SerializeField] private ClothingItemData[] eyebrows;
-    [SerializeField] private ClothingItemData[] mouths;
-    [SerializeField] private ClothingItemData[] ears;
-    [SerializeField] private ClothingItemData[] noses;
+    [Header("Item Source")]
+    [Tooltip("Central database of all ClothingItemData assets. If left empty, falls back to Resources.Load<ClothingDatabase>(\"ClothingDatabase\"). Populated by Dress To Impress > Import Clothing Assets.")]
+    [SerializeField] private ClothingDatabase database;
+
+    [Header("Auto-Match")]
+    [Tooltip("When true, eyebrows automatically use the color variant matching the current hair color. Cycling eyebrows steps through shapes only. Disable for experimental brow colors.")]
+    [SerializeField] private bool eyebrowsAutoMatchHair = true;
 
     [Header("Events")]
     /// <summary>Fires when any item is equipped. Passes the equipped ClothingItemData.</summary>
@@ -69,6 +66,14 @@ public class CharacterDisplay : MonoBehaviour
 
     private Dictionary<ClothingCategory, SpriteRenderer> _layerRenderers;
     private Dictionary<ClothingCategory, ClothingItemData> _equippedItems;
+
+    // Color index of the currently equipped BodyBase. Drives auto-skin-matching
+    // for features like ears so the player doesn't have to cycle through colors.
+    private int _currentBodyColorIndex = 1;
+
+    // Color index of the currently equipped FrontHair (falls back to BackHair).
+    // Drives eyebrow auto-color when eyebrowsAutoMatchHair is true.
+    private int _currentHairColorIndex = 1;
 
     // ── Unity lifecycle ────────────────────────────────────────────────────
 
@@ -144,6 +149,14 @@ public class CharacterDisplay : MonoBehaviour
             return;
         }
 
+        if (item.Category == ClothingCategory.BodyBase)
+            _currentBodyColorIndex = item.ColorVariantIndex;
+        else if (item.Category == ClothingCategory.FrontHair)
+            _currentHairColorIndex = item.ColorVariantIndex;
+        else if (item.Category == ClothingCategory.BackHair &&
+                 (!_equippedItems.TryGetValue(ClothingCategory.FrontHair, out ClothingItemData fh) || fh == null))
+            _currentHairColorIndex = item.ColorVariantIndex;
+
         sr.sprite = item.Sprite;
 
         if (item.Sprite != null)
@@ -162,14 +175,99 @@ public class CharacterDisplay : MonoBehaviour
         _equippedItems[item.Category] = item;
     }
 
-    private void EquipFromArray(ClothingItemData[] array, int index)
+    /// <summary>
+    /// Resolves the active database, preferring the inspector-assigned reference
+    /// and falling back to the Resources singleton. Returns null if neither exists.
+    /// </summary>
+    private ClothingDatabase ResolveDatabase()
     {
-        if (array == null || array.Length == 0) return;
+        return database != null ? database : ClothingDatabase.Default;
+    }
+
+    /// <summary>
+    /// Returns every <see cref="ClothingItemData"/> belonging to
+    /// <paramref name="category"/> from the active database, or an empty array
+    /// if no database is available.
+    /// </summary>
+    public ClothingItemData[] GetItemsByCategory(ClothingCategory category)
+    {
+        ClothingDatabase db = ResolveDatabase();
+        return db != null ? db.GetByCategory(category) : System.Array.Empty<ClothingItemData>();
+    }
+
+    private void EquipFromCategory(ClothingCategory category, int index)
+    {
+        ClothingItemData[] array = GetItemsByCategory(category);
+        if (array.Length == 0) return;
+
         int clamped = Mathf.Clamp(index, 0, array.Length - 1);
         ClothingItemData item = array[clamped];
         if (item == null) return;
+
+        if (item.Category == ClothingCategory.Ears)
+            item = ResolveColorMatched(item, array, _currentBodyColorIndex);
+        else if (item.Category == ClothingCategory.Eyebrows && eyebrowsAutoMatchHair)
+            item = ResolveColorMatched(item, array, _currentHairColorIndex);
+
         EquipItemInternal(item);
         onItemEquipped?.Invoke(item);
+    }
+
+    /// <summary>
+    /// Returns the variant of <paramref name="item"/> whose
+    /// <see cref="ClothingItemData.ColorVariantIndex"/> equals
+    /// <paramref name="targetColorIndex"/>. Falls back to the input item if no
+    /// match exists in <paramref name="array"/>. Used so features like ears or
+    /// eyebrows can auto-track another layer's color without the player having
+    /// to cycle through color variants.
+    /// </summary>
+    private ClothingItemData ResolveColorMatched(ClothingItemData item, ClothingItemData[] array, int targetColorIndex)
+    {
+        if (item == null || array == null) return item;
+        if (item.ColorVariantIndex == targetColorIndex) return item;
+
+        foreach (ClothingItemData candidate in array)
+        {
+            if (candidate == null) continue;
+            if (candidate.GroupName == item.GroupName &&
+                candidate.ColorVariantIndex == targetColorIndex)
+                return candidate;
+        }
+        return item;
+    }
+
+    /// <summary>
+    /// Re-equips the currently shown ears using the variant whose color matches
+    /// the current body color. No-op if nothing is currently equipped on the
+    /// Ears layer.
+    /// </summary>
+    private void RefreshEarsForBodyColor()
+    {
+        if (_equippedItems == null) return;
+        if (!_equippedItems.TryGetValue(ClothingCategory.Ears, out ClothingItemData currentEar) || currentEar == null) return;
+
+        ClothingItemData[] earsArray = GetItemsByCategory(ClothingCategory.Ears);
+        ClothingItemData matched = ResolveColorMatched(currentEar, earsArray, _currentBodyColorIndex);
+        if (matched != null && matched != currentEar)
+            EquipItemInternal(matched);
+    }
+
+    /// <summary>
+    /// Re-equips the currently shown eyebrows using the variant whose color
+    /// matches the current hair color. Skipped when
+    /// <see cref="eyebrowsAutoMatchHair"/> is false. No-op if nothing is
+    /// currently equipped on the Eyebrows layer.
+    /// </summary>
+    private void RefreshEyebrowsForHairColor()
+    {
+        if (!eyebrowsAutoMatchHair) return;
+        if (_equippedItems == null) return;
+        if (!_equippedItems.TryGetValue(ClothingCategory.Eyebrows, out ClothingItemData currentBrow) || currentBrow == null) return;
+
+        ClothingItemData[] eyebrowsArray = GetItemsByCategory(ClothingCategory.Eyebrows);
+        ClothingItemData matched = ResolveColorMatched(currentBrow, eyebrowsArray, _currentHairColorIndex);
+        if (matched != null && matched != currentBrow)
+            EquipItemInternal(matched);
     }
 
     // ── Public API — core equip/unequip ───────────────────────────────────
@@ -318,14 +416,14 @@ public class CharacterDisplay : MonoBehaviour
         if (profile == null) return;
         if (!CheckInitialized(nameof(ApplyProfile))) return;
 
-        EquipFromArray(bodyTypes,  profile.BodyTypeIndex);
-        EquipFromArray(frontHairs, profile.FrontHairIndex);
-        EquipFromArray(backHairs,  profile.BackHairIndex);
-        EquipFromArray(eyes,       profile.EyesIndex);
-        EquipFromArray(eyebrows,   profile.EyebrowsIndex);
-        EquipFromArray(mouths,     profile.MouthIndex);
-        EquipFromArray(ears,       profile.EarsIndex);
-        EquipFromArray(noses,      profile.NoseIndex);
+        EquipFromCategory(ClothingCategory.BodyBase,  profile.BodyTypeIndex);
+        EquipFromCategory(ClothingCategory.FrontHair, profile.FrontHairIndex);
+        EquipFromCategory(ClothingCategory.BackHair,  profile.BackHairIndex);
+        EquipFromCategory(ClothingCategory.Eyes,      profile.EyesIndex);
+        EquipFromCategory(ClothingCategory.Eyebrows,  profile.EyebrowsIndex);
+        EquipFromCategory(ClothingCategory.Mouth,     profile.MouthIndex);
+        EquipFromCategory(ClothingCategory.Ears,      profile.EarsIndex);
+        EquipFromCategory(ClothingCategory.Nose,      profile.NoseIndex);
     }
 
     /// <summary>
@@ -337,6 +435,7 @@ public class CharacterDisplay : MonoBehaviour
         if (!CheckInitialized(nameof(SetBodyType))) return;
         if (bodyData == null) return;
         EquipItemInternal(bodyData);
+        RefreshEarsForBodyColor();
         onItemEquipped?.Invoke(bodyData);
     }
 
@@ -362,6 +461,11 @@ public class CharacterDisplay : MonoBehaviour
             return;
         }
 
+        if (featureCategory == ClothingCategory.Ears)
+            data = ResolveColorMatched(data, GetItemsByCategory(ClothingCategory.Ears), _currentBodyColorIndex);
+        else if (featureCategory == ClothingCategory.Eyebrows && eyebrowsAutoMatchHair)
+            data = ResolveColorMatched(data, GetItemsByCategory(ClothingCategory.Eyebrows), _currentHairColorIndex);
+
         EquipItemInternal(data);
         onItemEquipped?.Invoke(data);
     }
@@ -384,8 +488,25 @@ public class CharacterDisplay : MonoBehaviour
         }
 
         EquipItemInternal(data);
+        RefreshEyebrowsForHairColor();
         onItemEquipped?.Invoke(data);
     }
+
+    /// <summary>
+    /// Enables or disables auto-matching of eyebrow color to the current hair
+    /// color. When enabled, also refreshes the currently equipped brow to the
+    /// matching color immediately. When disabled, the player can pick any brow
+    /// color independently.
+    /// </summary>
+    public void SetEyebrowsAutoMatchHair(bool autoMatch)
+    {
+        eyebrowsAutoMatchHair = autoMatch;
+        if (autoMatch && _equippedItems != null)
+            RefreshEyebrowsForHairColor();
+    }
+
+    /// <summary>True when eyebrow color is being auto-driven by hair color.</summary>
+    public bool EyebrowsAutoMatchHair => eyebrowsAutoMatchHair;
 
     // ── Private helpers ────────────────────────────────────────────────────
 

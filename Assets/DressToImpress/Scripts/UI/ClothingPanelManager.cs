@@ -41,16 +41,25 @@ public class ClothingPanelManager : MonoBehaviour
         ClothingCategory.SocksLeggings, ClothingCategory.Outerwear, ClothingCategory.Accessory
     };
 
-    [Header("All Available Items")]
-    [Tooltip("All ClothingItemData assets available to the player. Assign in Inspector or call SetAvailableItems() at runtime.")]
+    [Header("Item Source")]
+    [Tooltip("Central database of all ClothingItemData assets. If left empty, falls back to Resources.Load<ClothingDatabase>(\"ClothingDatabase\"). Populated by Dress To Impress > Import Clothing Assets.")]
+    [SerializeField] private ClothingDatabase database;
+
+    [Tooltip("Optional override: if set, only these items are shown (rather than the full database). Useful for boutique-style scenes that show a curated subset.")]
     [SerializeField] private ClothingItemData[] allClothingItems;
 
     [Header("Visual")]
-    [Tooltip("Color applied to tab button text/image when that tab is active.")]
-    [SerializeField] private Color activeTabColor = new Color(1f, 0.8f, 0.2f);
+    [Tooltip("Label color applied to the active tab.")]
+    [SerializeField] private Color activeTabColor = new Color(0.15f, 0.1f, 0.15f);
 
-    [Tooltip("Color applied to tab button text/image when inactive.")]
-    [SerializeField] private Color inactiveTabColor = Color.white;
+    [Tooltip("Label color applied to inactive tabs.")]
+    [SerializeField] private Color inactiveTabColor = new Color(0.95f, 0.95f, 0.95f);
+
+    [Tooltip("Background color for the active tab.")]
+    [SerializeField] private Color activeTabBackground = new Color(1f, 0.85f, 0.4f);
+
+    [Tooltip("Background color for inactive tabs.")]
+    [SerializeField] private Color inactiveTabBackground = new Color(0.18f, 0.18f, 0.22f);
 
     [Tooltip("Color overlay applied to an item button when its item is equipped.")]
     [SerializeField] private Color selectedItemColor = new Color(0.7f, 1f, 0.7f);
@@ -100,16 +109,17 @@ public class ClothingPanelManager : MonoBehaviour
         ClearTabButtons();
         ClearItemButtons();
 
-        // Build category → items lookup
+        // Build category → items lookup. When allClothingItems is non-empty
+        // it acts as a curated override. Otherwise pull every item in the
+        // visible categories from the central ClothingDatabase.
         _itemsByCategory = new Dictionary<ClothingCategory, List<ClothingItemData>>();
 
-        if (allClothingItems != null)
+        if (allClothingItems != null && allClothingItems.Length > 0)
         {
             foreach (ClothingItemData item in allClothingItems)
             {
                 if (item == null) continue;
 
-                // Only index items whose category is in visibleCategories
                 bool isVisible = false;
                 foreach (ClothingCategory vc in visibleCategories)
                 {
@@ -121,6 +131,29 @@ public class ClothingPanelManager : MonoBehaviour
                     _itemsByCategory[item.Category] = new List<ClothingItemData>();
 
                 _itemsByCategory[item.Category].Add(item);
+            }
+        }
+        else
+        {
+            ClothingDatabase db = database != null ? database : ClothingDatabase.Default;
+            if (db == null)
+            {
+                Debug.LogWarning("[ClothingPanelManager] No ClothingDatabase assigned and none found at Resources/ClothingDatabase. Run 'Dress To Impress > Import Clothing Assets' to create it.");
+            }
+            else
+            {
+                foreach (ClothingCategory vc in visibleCategories)
+                {
+                    ClothingItemData[] items = db.GetByCategory(vc);
+                    if (items.Length == 0) continue;
+
+                    var list = new List<ClothingItemData>(items.Length);
+                    foreach (ClothingItemData item in items)
+                        if (item != null) list.Add(item);
+
+                    if (list.Count > 0)
+                        _itemsByCategory[vc] = list;
+                }
             }
         }
 
@@ -161,14 +194,21 @@ public class ClothingPanelManager : MonoBehaviour
     {
         _activeCategory = category;
 
-        // Update tab highlight colors
+        // Update tab highlight colors (label + background) for clear contrast
+        // regardless of how the surrounding panel has been re-themed.
         for (int i = 0; i < _activeTabButtons.Count; i++)
         {
             if (_activeTabButtons[i] == null) continue;
 
+            bool isActive = (visibleCategories[i] == category);
+
             TMP_Text label = _activeTabButtons[i].GetComponentInChildren<TMP_Text>();
             if (label != null)
-                label.color = (visibleCategories[i] == category) ? activeTabColor : inactiveTabColor;
+                label.color = isActive ? activeTabColor : inactiveTabColor;
+
+            Image bg = _activeTabButtons[i].GetComponent<Image>();
+            if (bg != null)
+                bg.color = isActive ? activeTabBackground : inactiveTabBackground;
         }
 
         // Rebuild item buttons for this category
@@ -193,7 +233,10 @@ public class ClothingPanelManager : MonoBehaviour
                 {
                     Image iconImage = FindChildImage(btnGO);
                     if (iconImage != null)
+                    {
                         iconImage.sprite = item.Sprite;
+                        iconImage.preserveAspect = true;
+                    }
                 }
 
                 // Wire click listener

@@ -210,12 +210,15 @@ These auto-build the full hierarchy and wire all component references. After reb
 1. Wire `JudgeManager.onAvatarSet` → `[AvatarImage]` Image component (Inspector)
 2. Wire `JudgeManager.onMoneyAwarded` → your money display (e.g. `GameCollectionManager.Increment`)
 3. Assign `JudgeData` ScriptableObjects to `JudgeManager.judges` array
-4. Assign `ClothingItemData` assets to `ClothingPanelManager.allClothingItems`
+
+(Item arrays no longer need manual wiring — `CharacterDisplay`, `CharacterCreator`, and `ClothingPanelManager` all read from `Assets/DressToImpress/Resources/ClothingDatabase.asset`, which the importer keeps current.)
 
 ### Importing New Clothing Art
 1. Drop PNGs into `Assets/Art/` using naming convention: `{itemName}_color{N}_x{X}_y{Y}.png`
-2. Run **Dress To Impress > Import Clothing** (ClothingImporter EditorWindow)
-3. Assets are created/updated in `Assets/DressToImpress/Data/{Category}/`
+2. Run **Dress To Impress > Import Clothing Assets** (ClothingImporter EditorWindow)
+3. The importer creates/updates `ClothingItemData` in `Assets/DressToImpress/Data/{Category}/` *and* rebuilds `Resources/ClothingDatabase.asset`. Every scene picks up new items automatically — no Inspector drag-and-drop.
+
+See **[ArtistWorkflow.md](Assets/DressToImpress/Documentation/ArtistWorkflow.md)** for the full artist guide (naming convention, color groups, auto-match for ears/eyebrows, adding categories).
 
 ### Building
 - Build Settings: Ctrl+Shift+B

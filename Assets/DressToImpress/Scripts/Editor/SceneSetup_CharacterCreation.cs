@@ -159,6 +159,16 @@ public static class SceneSetup_CharacterCreation
         creatorSO.FindProperty("characterDisplay").objectReferenceValue = characterDisplay;
         creatorSO.ApplyModifiedPropertiesWithoutUndo();
 
+        // CharacterDisplay — wire database reference (auto-load fallback covers null)
+        ClothingDatabase database = AssetDatabase.LoadAssetAtPath<ClothingDatabase>(
+            "Assets/DressToImpress/Resources/ClothingDatabase.asset");
+        if (database != null)
+        {
+            SerializedObject cdSO = new SerializedObject(characterDisplay);
+            cdSO.FindProperty("database").objectReferenceValue = database;
+            cdSO.ApplyModifiedPropertiesWithoutUndo();
+        }
+
         // Wire ButtonStartStyling.onClick → CharacterCreator.OnStartStyling()
         UnityEventTools.AddPersistentListener(buttonStartBtn.onClick, characterCreator.OnStartStyling);
 
@@ -168,7 +178,11 @@ public static class SceneSetup_CharacterCreation
         // Select the first object so the user can see what was built in the Hierarchy
         Selection.activeGameObject = cameraGO;
 
-        Debug.Log("[DressToImpress] Character Creation scene setup complete. Assign ClothingItemData arrays to CharacterCreator in the Inspector.");
+        Debug.Log(
+            "[DressToImpress] Character Creation scene setup complete. " +
+            (database != null
+                ? "ClothingDatabase wired automatically — items pulled from the central database."
+                : "ClothingDatabase NOT FOUND. Run 'Dress To Impress > Import Clothing Assets' to create it."));
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────────

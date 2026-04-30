@@ -26,8 +26,10 @@ public class ClothingImporter : EditorWindow
 {
     // ── Constants ─────────────────────────────────────────────────────────────
 
-    private const string ArtSearchFolder  = "Assets/Art";
-    private const string OutputRootFolder = "Assets/DressToImpress/Data";
+    private const string ArtSearchFolder    = "Assets/Art";
+    private const string OutputRootFolder   = "Assets/DressToImpress/Data";
+    private const string DatabaseFolder     = "Assets/DressToImpress/Resources";
+    private const string DatabaseAssetPath  = "Assets/DressToImpress/Resources/ClothingDatabase.asset";
 
     /// <summary>
     /// Regex applied to the filename (without directory) to extract item metadata.
@@ -227,6 +229,10 @@ public class ClothingImporter : EditorWindow
 
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
+
+            // Rebuild the central ClothingDatabase from every asset under OutputRootFolder.
+            int dbCount = RebuildDatabase();
+            _log.Add($"[DATABASE] {DatabaseAssetPath} now contains {dbCount} items.");
         }
         finally
         {
@@ -237,6 +243,46 @@ public class ClothingImporter : EditorWindow
         _log.Add(string.Empty);
         _log.Add(_summary);
         Repaint();
+    }
+
+    /// <summary>
+    /// Rebuilds <c>ClothingDatabase.asset</c> by loading every
+    /// <see cref="ClothingItemData"/> under <see cref="OutputRootFolder"/>.
+    /// Creates the database asset (and the <c>Resources</c> folder) if missing.
+    /// Returns the number of items in the resulting database.
+    /// </summary>
+    private static int RebuildDatabase()
+    {
+        // Ensure Resources folder
+        if (!AssetDatabase.IsValidFolder(DatabaseFolder))
+        {
+            string parent = Path.GetDirectoryName(DatabaseFolder).Replace('\\', '/');
+            string leaf   = Path.GetFileName(DatabaseFolder);
+            AssetDatabase.CreateFolder(parent, leaf);
+        }
+
+        ClothingDatabase database = AssetDatabase.LoadAssetAtPath<ClothingDatabase>(DatabaseAssetPath);
+        if (database == null)
+        {
+            database = ScriptableObject.CreateInstance<ClothingDatabase>();
+            AssetDatabase.CreateAsset(database, DatabaseAssetPath);
+        }
+
+        // Find every ClothingItemData under the output folder
+        string[] guids = AssetDatabase.FindAssets("t:ClothingItemData", new[] { OutputRootFolder });
+        var collected = new List<ClothingItemData>(guids.Length);
+        foreach (string guid in guids)
+        {
+            string path = AssetDatabase.GUIDToAssetPath(guid);
+            ClothingItemData item = AssetDatabase.LoadAssetAtPath<ClothingItemData>(path);
+            if (item != null) collected.Add(item);
+        }
+
+        database.EditorReplaceAll(collected);
+        EditorUtility.SetDirty(database);
+        AssetDatabase.SaveAssets();
+        ClothingDatabase.ClearDefaultCache();
+        return collected.Count;
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────

@@ -178,6 +178,7 @@ public static class SceneSetup_StylingRoom
 
         Image avatarImg = avatarImageGO.AddComponent<Image>();
         avatarImg.color = new Color(0.4f, 0.4f, 0.5f, 1f);
+        avatarImg.preserveAspect = true;
 
         // JudgeNameText
         GameObject judgeNameTextGO = CreateUIObject("[JudgeNameText]", judgePanelGO.transform);
@@ -261,16 +262,19 @@ public static class SceneSetup_StylingRoom
         tabBarRT.anchorMax        = new Vector2(1f, 1f);
         tabBarRT.pivot            = new Vector2(0.5f, 1f);
         tabBarRT.anchoredPosition = new Vector2(0f, 0f);
-        tabBarRT.sizeDelta        = new Vector2(0f, 44f);
+        tabBarRT.sizeDelta        = new Vector2(0f, 48f);
 
         Image tabBarImg = tabBarGO.AddComponent<Image>();
         tabBarImg.color = new Color(0.05f, 0.05f, 0.08f, 1f);
 
         HorizontalLayoutGroup tabHLG = tabBarGO.AddComponent<HorizontalLayoutGroup>();
-        tabHLG.spacing              = 4f;
-        tabHLG.padding              = new RectOffset(8, 8, 0, 0);
-        tabHLG.childControlWidth    = true;
-        tabHLG.childForceExpandWidth = true;
+        tabHLG.spacing                = 4f;
+        tabHLG.padding                = new RectOffset(8, 8, 4, 4);
+        tabHLG.childControlWidth      = true;
+        tabHLG.childForceExpandWidth  = true;
+        tabHLG.childControlHeight     = true;
+        tabHLG.childForceExpandHeight = true;
+        tabHLG.childAlignment         = TextAnchor.MiddleCenter;
 
         // ItemScrollView
         GameObject itemScrollViewGO = CreateUIObject("[ItemScrollView]", clothingPanelGO.transform);
@@ -361,13 +365,26 @@ public static class SceneSetup_StylingRoom
         osSO.ApplyModifiedPropertiesWithoutUndo();
 
         // ClothingPanelManager
+        ClothingDatabase database = AssetDatabase.LoadAssetAtPath<ClothingDatabase>(
+            "Assets/DressToImpress/Resources/ClothingDatabase.asset");
+
         SerializedObject cpmSO = new SerializedObject(clothingPanelManager);
         cpmSO.FindProperty("characterDisplay").objectReferenceValue  = characterDisplay;
         cpmSO.FindProperty("tabContainer").objectReferenceValue      = tabBarRT;
         cpmSO.FindProperty("itemContainer").objectReferenceValue     = itemContentRT;
         cpmSO.FindProperty("tabButtonPrefab").objectReferenceValue   = tabButtonPrefab;
         cpmSO.FindProperty("itemButtonPrefab").objectReferenceValue  = itemButtonPrefab;
+        if (database != null)
+            cpmSO.FindProperty("database").objectReferenceValue = database;
         cpmSO.ApplyModifiedPropertiesWithoutUndo();
+
+        // CharacterDisplay — wire database reference so it doesn't need Resources fallback
+        if (database != null)
+        {
+            SerializedObject cdSO = new SerializedObject(characterDisplay);
+            cdSO.FindProperty("database").objectReferenceValue = database;
+            cdSO.ApplyModifiedPropertiesWithoutUndo();
+        }
 
         // ── Wire button onClick events ─────────────────────────────────────────────
         UnityEventTools.AddPersistentListener(nextBtn.onClick,     stylingRoomManager.OnNextJudge);
@@ -389,11 +406,13 @@ public static class SceneSetup_StylingRoom
         Debug.Log(
             "[DressToImpress] Styling Room scene setup complete.\n" +
             "Auto-wired: onJudgeNameSet, onStyleTagSet, onPromptSet, onJudgeDialogue, Submit/Next/Boutique buttons.\n" +
+            (database != null
+                ? "ClothingDatabase wired automatically — every imported item is available to the panel.\n"
+                : "ClothingDatabase NOT FOUND. Run 'Dress To Impress > Import Clothing Assets' to create it.\n") +
             "Manual wiring still required:\n" +
             "  • JudgeManager.onAvatarSet    → [AvatarImage] UI Image (property setter — must wire in Inspector)\n" +
             "  • JudgeManager.onMoneyAwarded → money display (e.g. GameCollectionManager.Increment)\n" +
-            "  • Assign JudgeData ScriptableObjects to JudgeManager.judges array\n" +
-            "  • Assign ClothingItemData assets to ClothingPanelManager.allClothingItems"
+            "  • Assign JudgeData ScriptableObjects to JudgeManager.judges array"
         );
     }
 
@@ -410,20 +429,39 @@ public static class SceneSetup_StylingRoom
 
         // Build the temporary source object
         GameObject root = new GameObject("TabButton");
+        RectTransform rootRT = root.AddComponent<RectTransform>();
+        rootRT.sizeDelta = new Vector2(120f, 40f);
+
         Image bg = root.AddComponent<Image>();
-        bg.color = new Color(0.2f, 0.2f, 0.25f, 1f);
+        bg.color = new Color(0.18f, 0.18f, 0.22f, 1f);
         Button btn = root.AddComponent<Button>();
         btn.targetGraphic = bg;
+
+        // LayoutElement so HorizontalLayoutGroup gives every tab a sensible
+        // minimum width/height even when its sizeDelta has been overwritten.
+        LayoutElement tabLE = root.AddComponent<LayoutElement>();
+        tabLE.minHeight       = 36f;
+        tabLE.preferredHeight = 36f;
+        tabLE.minWidth        = 80f;
+        tabLE.flexibleWidth   = 1f;
 
         GameObject labelGO = new GameObject("Label");
         labelGO.transform.SetParent(root.transform, false);
         RectTransform labelRT = labelGO.AddComponent<RectTransform>();
         SetStretchFull(labelRT);
         TextMeshProUGUI labelTMP = labelGO.AddComponent<TextMeshProUGUI>();
-        labelTMP.text      = "TAB";
-        labelTMP.fontSize  = 20f;
-        labelTMP.alignment = TextAlignmentOptions.Center;
-        labelTMP.color     = Color.white;
+        labelTMP.text             = "TAB";
+        labelTMP.fontSize         = 16f;
+        labelTMP.fontStyle        = FontStyles.Bold;
+        labelTMP.alignment        = TextAlignmentOptions.Center;
+        labelTMP.color            = Color.white;
+        labelTMP.margin           = Vector4.zero;
+        labelTMP.textWrappingMode = TextWrappingModes.NoWrap;
+        labelTMP.overflowMode     = TextOverflowModes.Ellipsis;
+        // Auto-size the label so long category names (e.g. "SocksLeggings") still fit.
+        labelTMP.enableAutoSizing = true;
+        labelTMP.fontSizeMin = 8f;
+        labelTMP.fontSizeMax = 16f;
 
         GameObject prefabAsset = PrefabUtility.SaveAsPrefabAsset(root, path);
         Object.DestroyImmediate(root);
@@ -457,7 +495,8 @@ public static class SceneSetup_StylingRoom
         iconRT.anchorMax        = new Vector2(0.9f, 0.95f);
         iconRT.offsetMin        = Vector2.zero;
         iconRT.offsetMax        = Vector2.zero;
-        iconGO.AddComponent<Image>(); // icon image — sprite set at runtime
+        Image iconImg = iconGO.AddComponent<Image>(); // icon image — sprite set at runtime
+        iconImg.preserveAspect = true;
 
         // Label child
         GameObject labelGO = new GameObject("Label");
